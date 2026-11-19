@@ -555,3 +555,75 @@ if __name__ == "__main__":
         [2, 1, 1],
     ]
     print(cheapest_path(toll_map, (0, 0), (0, 2)))
+
+
+24 задача
+from __future__ import annotations
+
+POINTS: dict[str, tuple[int, int]] = {
+    "A": (0, 0), "B": (0, 1), "C": (0, 2),
+    "D": (1, 0), "E": (1, 1), "F": (1, 2),
+    "G": (2, 0), "H": (2, 1), "I": (2, 2),
+}
+
+ALL_COORDS: tuple[tuple[int, int], ...] = tuple(POINTS.values())
+
+
+def _can_move(
+    cur: tuple[int, int],
+    nxt: tuple[int, int],
+    visited: set[tuple[int, int]],
+) -> bool:
+    if nxt in visited:
+        return False
+
+    r1, c1 = cur
+    r2, c2 = nxt
+    sum_r = r1 + r2
+    sum_c = c1 + c2
+
+    # Промежуточная точка существует, когда обе координаты середины целые
+    if sum_r % 2 == 0 and sum_c % 2 == 0:
+        mid = (sum_r // 2, sum_c // 2)
+        if mid != cur and mid != nxt and mid not in visited:
+            return False
+
+    return True
+
+
+def count_patterns_from(first_point: str, length: int) -> int:
+    if length <= 0 or length > 9 or first_point not in POINTS:
+        return 0
+    if length == 1:
+        return 1
+
+    start = POINTS[first_point]
+
+    def dfs(curr: tuple[int, int], remaining: int, visited: set[tuple[int, int]]) -> int:
+        if remaining == 0:
+            return 1
+
+        total = 0
+        for nxt in ALL_COORDS:
+            if _can_move(curr, nxt, visited):
+                visited.add(nxt)
+                total += dfs(nxt, remaining - 1, visited)
+                visited.remove(nxt)
+        return total
+
+    return dfs(start, length - 1, {start})
+
+
+# Алиас под именование в условии задачи
+countPatternsFrom = count_patterns_from
+
+
+if __name__ == "__main__":
+    print(count_patterns_from("C", 2))  # 5
+    # Проверка всех допустимых длин 4..9 для Android (ожидается 389112)
+    total_android = sum(
+        count_patterns_from(pt, length)
+        for pt in POINTS
+        for length in range(4, 10)
+    )
+    print("Всего ключей (4..9):", total_android)
