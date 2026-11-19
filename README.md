@@ -343,3 +343,16 @@ def is_interesting(number: int, awesome_phrases: list[int]) -> int:
         return 1
     return 0
     
+20 задача
+def doubles(maxk: int, maxn: int) -> float:
+    total = 0.0
+    for n in range(2, maxn + 2):
+        inv_sq = 1.0 / (n * n)
+        power = inv_sq  # equals (n)^(-2*k) for k = 1
+        for k in range(1, maxk + 1):
+            term = power / k
+            if term == 0.0:
+                break
+            total += term
+            power *= inv_sq
+    return total
