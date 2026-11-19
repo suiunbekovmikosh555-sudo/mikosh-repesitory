@@ -83,3 +83,41 @@ def find_even_index(arr):
 def high(x):
     words = x.split()
     return max(words, key=lambda word: sum(ord(c) - ord('a') + 1 for c in word))
+
+
+10 задача
+class RomanNumerals:
+    @staticmethod
+    def to_roman(val: int) -> str:
+        values = [
+            (1000, "M"), (900, "CM"), (500, "D"),
+            (400, "CD"), (100, "C"), (90, "XC"),
+            (50, "L"), (40, "XL"), (10, "X"),
+            (9, "IX"), (5, "V"), (4, "IV"), (1, "I")
+        ]
+
+        result = ""
+
+        for number, symbol in values:
+            while val >= number:
+                result += symbol
+                val -= number
+
+        return result
+
+    @staticmethod
+    def from_roman(roman_num: str) -> int:
+        values = {
+            "M": 1000, "D": 500, "C": 100,
+            "L": 50, "X": 10, "V": 5, "I": 1
+        }
+
+        total = 0
+
+        for i in range(len(roman_num)):
+            if i + 1 < len(roman_num) and values[roman_num[i]] < values[roman_num[i + 1]]:
+                total -= values[roman_num[i]]
+            else:
+                total += values[roman_num[i]]
+
+        return total
