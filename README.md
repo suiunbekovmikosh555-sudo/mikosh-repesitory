@@ -77,3 +77,9 @@ def find_even_index(arr):
         left_sum += arr[i]
 
     return -1
+
+
+задача 9
+def high(x):
+    words = x.split()
+    return max(words, key=lambda word: sum(ord(c) - ord('a') + 1 for c in word))
