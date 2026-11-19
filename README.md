@@ -15,3 +15,13 @@ def create_phone_number(n):
         # Эгер кийинки тамганын коду мурункусунан 1ге чоң болбосо, демек ошол арадагы тамга жетишпейт
         if ord(chars[i + 1]) - ord(chars[i]) > 1:
             return chr(ord(chars[i]) +
+
+
+4 задача
+def get_middle(s):
+    length = len(s)
+    middle = length // 2
+    if length % 2 == 0:
+        return s[middle - 1 : middle + 1]
+    else:
+        return s[middle]
