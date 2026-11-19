@@ -482,3 +482,76 @@ if __name__ == "__main__":
         [11, 6, 14, 12],
     ]
     print(calculate(rects))  # 36
+
+
+23 задача 
+from __future__ import annotations
+
+import heapq
+
+
+def cheapest_path(
+    t: list[list[int]],
+    start: tuple[int, int],
+    finish: tuple[int, int],
+) -> list[str]:
+    if start == finish:
+        return []
+
+    rows = len(t)
+    cols = len(t[0])
+
+    moves: tuple[tuple[int, int, str], ...] = (
+        (-1, 0, "up"),
+        (1, 0, "down"),
+        (0, -1, "left"),
+        (0, 1, "right"),
+    )
+
+    dist: dict[tuple[int, int], int] = {start: 0}
+    # Храним: (current_cell, direction_from_parent)
+    parent: dict[tuple[int, int], tuple[tuple[int, int], str]] = {}
+    pq: list[tuple[int, int, int]] = [(0, start[0], start[1])]
+
+    while pq:
+        cost, r, c = heapq.heappop(pq)
+        curr = (r, c)
+
+        if curr == finish:
+            break
+
+        if cost > dist.get(curr, float("inf")):
+            continue
+
+        step_cost = t[r][c]
+        for dr, dc, direction in moves:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols:
+                nxt = (nr, nc)
+                new_cost = cost + step_cost
+                if new_cost < dist.get(nxt, float("inf")):
+                    dist[nxt] = new_cost
+                    parent[nxt] = (curr, direction)
+                    heapq.heappush(pq, (new_cost, nr, nc))
+
+    if finish not in parent:
+        return []
+
+    path: list[str] = []
+    node = finish
+    while node != start:
+        prev_node, direction = parent[node]
+        path.append(direction)
+        node = prev_node
+
+    path.reverse()
+    return path
+
+
+if __name__ == "__main__":
+    toll_map = [
+        [1, 9, 1],
+        [2, 9, 1],
+        [2, 1, 1],
+    ]
+    print(cheapest_path(toll_map, (0, 0), (0, 2)))
