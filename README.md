@@ -171,3 +171,9 @@ def sum_of_intervals(intervals):
 задача 13
 def int32_to_ip(int32):
     return ".".join(str((int32 >> (8 * i)) & 255) for i in range(3, -1, -1))
+
+
+14 задача
+def order_weight(strng):
+    return " ".join(sorted(strng.split(), key=lambda x: (sum(int(d) for d in x), x)))
+
