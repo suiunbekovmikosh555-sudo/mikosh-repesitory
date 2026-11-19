@@ -210,3 +210,24 @@ class User:
 
         if self.rank == 8:
             self.progress = 0
+
+
+16 задача
+def tree_by_levels(root):
+    if root is None:
+        return []
+
+    result = []
+    queue = [root]
+
+    while queue:
+        node = queue.pop(0)
+        result.append(node.value)
+
+        if node.left is not None:
+            queue.append(node.left)
+
+        if node.right is not None:
+            queue.append(node.right)
+
+    return result
