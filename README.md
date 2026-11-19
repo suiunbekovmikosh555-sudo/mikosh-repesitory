@@ -231,3 +231,44 @@ def tree_by_levels(root):
             queue.append(node.right)
 
     return result
+
+
+17 задача
+def spiralize(size):
+    grid = [[0] * size for _ in range(size)]
+    directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+
+    r, c = 0, 0
+    d = 0
+
+    while True:
+        grid[r][c] = 1
+
+        dr, dc = directions[d]
+        nr, nc = r + dr, c + dc
+
+        def safe(rr, cc):
+            if not (0 <= rr < size and 0 <= cc < size):
+                return False
+            if grid[rr][cc]:
+                return False
+
+            for dr, dc in directions:
+                ar, ac = rr + dr, cc + dc
+                if 0 <= ar < size and 0 <= ac < size:
+                    if grid[ar][ac] and (ar, ac) != (r, c):
+                        return False
+
+            return True
+
+        if not safe(nr, nc):
+            d = (d + 1) % 4
+            dr, dc = directions[d]
+            nr, nc = r + dr, c + dc
+
+            if not safe(nr, nc):
+                break
+
+        r, c = nr, nc
+
+    return grid
