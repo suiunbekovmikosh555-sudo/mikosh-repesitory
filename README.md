@@ -177,3 +177,36 @@ def int32_to_ip(int32):
 def order_weight(strng):
     return " ".join(sorted(strng.split(), key=lambda x: (sum(int(d) for d in x), x)))
 
+15 задача
+class User:
+    def __init__(self):
+        self.rank = -8
+        self.progress = 0
+
+    def inc_progress(self, activity_rank):
+        valid_ranks = [-8, -7, -6, -5, -4, -3, -2, -1,
+                       1, 2, 3, 4, 5, 6, 7, 8]
+
+        if activity_rank not in valid_ranks:
+            raise ValueError("Invalid rank")
+
+        if self.rank == 8:
+            return
+
+        rank_index = valid_ranks.index(self.rank)
+        activity_index = valid_ranks.index(activity_rank)
+        difference = activity_index - rank_index
+
+        if difference == 0:
+            self.progress += 3
+        elif difference == -1:
+            self.progress += 1
+        elif difference > 0:
+            self.progress += 10 * difference * difference
+
+        while self.progress >= 100 and self.rank < 8:
+            self.progress -= 100
+            self.rank = valid_ranks[valid_ranks.index(self.rank) + 1]
+
+        if self.rank == 8:
+            self.progress = 0
