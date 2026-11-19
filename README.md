@@ -416,3 +416,69 @@ if __name__ == "__main__":
     solved = sudoku(puzzle)
     for row in solved:
         print(row)
+
+
+22 задача
+from __future__ import annotations
+
+from collections import defaultdict
+
+
+def calculate(rectangles: list[list[int]]) -> int:
+    if not rectangles:
+        return 0
+
+    # Group y-interval changes by x coordinate: (y0, y1, delta)
+    events_by_x: dict[int, list[tuple[int, int, int]]] = defaultdict(list)
+    for x0, y0, x1, y1 in rectangles:
+        if x0 < x1 and y0 < y1:
+            events_by_x[x0].append((y0, y1, 1))
+            events_by_x[x1].append((y0, y1, -1))
+
+    if not events_by_x:
+        return 0
+
+    sorted_xs = sorted(events_by_x)
+    active_counts: dict[tuple[int, int], int] = defaultdict(int)
+    total_area = 0
+    prev_x = sorted_xs[0]
+
+    for x in sorted_xs:
+        dx = x - prev_x
+        if dx > 0 and active_counts:
+            # Compute total length of union of active [y0, y1] intervals
+            intervals = sorted(active_counts.keys())
+            covered_y = 0
+            cur_start, cur_end = intervals[0]
+
+            for y0, y1 in intervals[1:]:
+                if y0 <= cur_end:
+                    if y1 > cur_end:
+                        cur_end = y1
+                else:
+                    covered_y += cur_end - cur_start
+                    cur_start, cur_end = y0, y1
+
+            covered_y += cur_end - cur_start
+            total_area += dx * covered_y
+
+        # Apply all events at current x
+        for y0, y1, delta in events_by_x[x]:
+            new_count = active_counts[(y0, y1)] + delta
+            if new_count > 0:
+                active_counts[(y0, y1)] = new_count
+            else:
+                del active_counts[(y0, y1)]
+
+        prev_x = x
+
+    return total_area
+
+
+if __name__ == "__main__":
+    rects = [
+        [3, 3, 8, 5],
+        [6, 3, 8, 9],
+        [11, 6, 14, 12],
+    ]
+    print(calculate(rects))  # 36
