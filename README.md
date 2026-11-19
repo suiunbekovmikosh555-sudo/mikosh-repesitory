@@ -272,3 +272,30 @@ def spiralize(size):
         r, c = nr, nc
 
     return grid
+
+
+18 задача 
+from collections import deque
+
+def path_finder(maze):
+    maze = maze.split("\n")
+    n = len(maze)
+
+    queue = deque([(0, 0)])
+    visited = {(0, 0)}
+
+    while queue:
+        x, y = queue.popleft()
+
+        if (x, y) == (n - 1, n - 1):
+            return True
+
+        for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            nx, ny = x + dx, y + dy
+
+            if 0 <= nx < n and 0 <= ny < n:
+                if maze[nx][ny] == "." and (nx, ny) not in visited:
+                    visited.add((nx, ny))
+                    queue.append((nx, ny))
+
+    return False
