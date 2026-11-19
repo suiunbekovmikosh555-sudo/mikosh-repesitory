@@ -626,4 +626,102 @@ if __name__ == "__main__":
         for pt in POINTS
         for length in range(4, 10)
     )
-    print("Всего ключей (4..9):", total_android)
+    print("Всего ключей (4..9):", total_android
+
+
+25 задача
+def line(grid):
+    if not grid or not grid[0]:
+        return False
+
+    h = len(grid)
+    w = len(grid[0])
+
+    endpoints = []
+    total_line_chars = 0
+
+    for r in range(h):
+        for c in range(w):
+            ch = grid[r][c]
+            if ch == "X":
+                endpoints.append((r, c))
+                total_line_chars += 1
+            elif ch in ("-", "|", "+"):
+                total_line_chars += 1
+
+    if len(endpoints) != 2:
+        return False
+
+    def can_enter(nr, nc, dr, dc, target_end):
+        if not (0 <= nr < h and 0 <= nc < w):
+            return False
+        nch = grid[nr][nc]
+        if (nr, nc) == target_end:
+            return True
+        if dr != 0:  # moving vertically
+            return nch in ("|", "+")
+        if dc != 0:  # moving horizontally
+            return nch in ("-", "+")
+        return False
+
+    def trace(start, end):
+        visited = {start}
+        r, c = start
+
+        # Initial step from starting 'X'
+        initial_moves = []
+        for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+            nr, nc = r + dr, c + dc
+            if (nr, nc) not in visited and can_enter(nr, nc, dr, dc, end):
+                initial_moves.append((nr, nc, dr, dc))
+
+        # Must have a single unambiguous starting direction
+        if len(initial_moves) != 1:
+            return False
+
+        r, c, dr, dc = initial_moves[0]
+        visited.add((r, c))
+
+        while (r, c) != end:
+            ch = grid[r][c]
+
+            if ch == "-":
+                if dr != 0:
+                    return False
+                nr, nc = r + dr, c + dc
+                if (nr, nc) in visited or not can_enter(nr, nc, dr, dc, end):
+                    return False
+                r, c = nr, nc
+                visited.add((r, c))
+
+            elif ch == "|":
+                if dc != 0:
+                    return False
+                nr, nc = r + dr, c + dc
+                if (nr, nc) in visited or not can_enter(nr, nc, dr, dc, end):
+                    return False
+                r, c = nr, nc
+                visited.add((r, c))
+
+            elif ch == "+":
+                # Must turn 90 degrees
+                turn_dirs = ((-1, 0), (1, 0)) if dr == 0 else ((0, -1), (0, 1))
+                next_moves = []
+                for ndr, ndc in turn_dirs:
+                    nr, nc = r + ndr, c + ndc
+                    if (nr, nc) not in visited and can_enter(nr, nc, ndr, ndc, end):
+                        next_moves.append((nr, nc, ndr, ndc))
+
+                if len(next_moves) != 1:
+                    return False
+
+                r, c, dr, dc = next_moves[0]
+                visited.add((r, c))
+
+            else:
+                return False
+
+        return len(visited) == total_line_chars
+
+    p1, p2 = endpoints
+    return trace(p1, p2) or trace(p2, p1)
