@@ -356,3 +356,63 @@ def doubles(maxk: int, maxn: int) -> float:
             total += term
             power *= inv_sq
     return total
+
+
+21 задача
+from __future__ import annotations
+
+
+def _is_valid(board: list[list[int]], row: int, col: int, num: int) -> bool:
+    # Check row and column
+    for i in range(9):
+        if board[row][i] == num or board[i][col] == num:
+            return False
+
+    # Check 3x3 box
+    box_row = (row // 3) * 3
+    box_col = (col // 3) * 3
+    for r in range(box_row, box_row + 3):
+        for c in range(box_col, box_col + 3):
+            if board[r][c] == num:
+                return False
+
+    return True
+
+
+def _solve_in_place(board: list[list[int]]) -> bool:
+    for row in range(9):
+        for col in range(9):
+            if board[row][col] == 0:
+                for num in range(1, 10):
+                    if _is_valid(board, row, col, num):
+                        board[row][col] = num
+                        if _solve_in_place(board):
+                            return True
+                        board[row][col] = 0
+                return False
+    return True
+
+
+def sudoku(puzzle: list[list[int]]) -> list[list[int]]:
+    board = [row[:] for row in puzzle]
+    if not _solve_in_place(board):
+        raise ValueError("No valid Sudoku solution exists for the given puzzle.")
+    return board
+
+
+if __name__ == "__main__":
+    puzzle = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9],
+    ]
+
+    solved = sudoku(puzzle)
+    for row in solved:
+        print(row)
