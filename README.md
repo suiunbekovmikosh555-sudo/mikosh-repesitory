@@ -24,4 +24,9 @@ def get_middle(s):
     if length % 2 == 0:
         return s[middle - 1 : middle + 1]
     else:
-        return s[middle]
+      
+        
+ 5 задача       
+ return s[middle]
+def square_digits(num):
+    return int("".join(str(int(digit) ** 2) for digit in str(num)))
