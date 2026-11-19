@@ -299,3 +299,47 @@ def path_finder(maze):
                     queue.append((nx, ny))
 
     return False
+
+
+19 задача
+def is_interesting(number: int, awesome_phrases: list[int]) -> int:
+    def check_single(n: int) -> bool:
+        if n < 100:
+            return False
+
+        s = str(n)
+
+        # 1. Any digit followed by all zeros
+        if len(set(s[1:])) == 1 and s[1] == "0":
+            return True
+
+        # 2. Every digit is the same
+        if len(set(s)) == 1:
+            return True
+
+        # 3. Sequential incrementing (0 comes after 9, not before 1)
+        inc_pattern = "1234567890"
+        if s in inc_pattern:
+            return True
+
+        # 4. Sequential decrementing (0 comes after 1, not before 9)
+        dec_pattern = "9876543210"
+        if s in dec_pattern:
+            return True
+
+        # 5. Palindrome
+        if s == s[::-1]:
+            return True
+
+        # 6. Matches awesome_phrases
+        if n in awesome_phrases:
+            return True
+
+        return False
+
+    if check_single(number):
+        return 2
+    if check_single(number + 1) or check_single(number + 2):
+        return 1
+    return 0
+    
