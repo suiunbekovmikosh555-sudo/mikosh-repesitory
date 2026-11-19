@@ -145,3 +145,24 @@ def get_pins(observed):
                   for neighbor in neighbors[digit]]
 
     return result
+
+
+12 задача
+def sum_of_intervals(intervals):
+    if not intervals:
+        return 0
+
+    intervals = sorted(intervals)
+    total = 0
+
+    start, end = intervals[0]
+
+    for a, b in intervals[1:]:
+        if a <= end:
+            end = max(end, b)
+        else:
+            total += end - start
+            start, end = a, b
+
+    total += end - start
+    return total
