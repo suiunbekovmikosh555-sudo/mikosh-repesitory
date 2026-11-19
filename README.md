@@ -166,3 +166,8 @@ def sum_of_intervals(intervals):
 
     total += end - start
     return total
+
+
+задача 13
+def int32_to_ip(int32):
+    return ".".join(str((int32 >> (8 * i)) & 255) for i in range(3, -1, -1))
