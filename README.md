@@ -725,3 +725,80 @@ def line(grid):
 
     p1, p2 = endpoints
     return trace(p1, p2) or trace(p2, p1)
+
+
+26 задача
+def validate_battlefield(field: list[list[int]]) -> bool:
+    if len(field) != 10 or any(len(row) != 10 for row in field):
+        return False
+
+    total_ones = sum(sum(row) for row in field)
+    if total_ones != 20:
+        return False
+
+    used = [[False] * 10 for _ in range(10)]
+    # size -> remaining count: 1 battleship (4), 2 cruisers (3), 3 destroyers (2), 4 submarines (1)
+    remaining = {4: 1, 3: 2, 2: 3, 1: 4}
+
+    def find_next_cell() -> tuple[int, int] | None:
+        for r in range(10):
+            for c in range(10):
+                if field[r][c] == 1 and not used[r][c]:
+                    return r, c
+        return None
+
+    def backtrack(covered: int) -> bool:
+        if covered == 20:
+            return all(cnt == 0 for cnt in remaining.values())
+
+        nxt = find_next_cell()
+        if nxt is None:
+            return False
+
+        r, c = nxt
+
+        for size in (4, 3, 2, 1):
+            if remaining[size] == 0:
+                continue
+
+            if size == 1:
+                used[r][c] = True
+                remaining[1] -= 1
+                if backtrack(covered + 1):
+                    return True
+                remaining[1] += 1
+                used[r][c] = False
+            else:
+                # Try horizontal placement to the right
+                if c + size <= 10 and all(
+                    field[r][c + k] == 1 and not used[r][c + k] for k in range(size)
+                ):
+                    for k in range(size):
+                        used[r][c + k] = True
+                    remaining[size] -= 1
+
+                    if backtrack(covered + size):
+                        return True
+
+                    remaining[size] += 1
+                    for k in range(size):
+                        used[r][c + k] = False
+
+                # Try vertical placement downwards
+                if r + size <= 10 and all(
+                    field[r + k][c] == 1 and not used[r + k][c] for k in range(size)
+                ):
+                    for k in range(size):
+                        used[r + k][c] = True
+                    remaining[size] -= 1
+
+                    if backtrack(covered + size):
+                        return True
+
+                    remaining[size] += 1
+                    for k in range(size):
+                        used[r + k][c] = False
+
+        return False
+
+    return backtrack(0)
