@@ -1087,3 +1087,46 @@ def maze_solver(maze: list[list[int | str]] | tuple[tuple[int | str, ...], ...])
                 state_queue.append(nxt_state)
 
     return None
+
+
+30 задача
+def volume(heightmap):
+    if not heightmap:
+        return 0
+
+    m, n = len(heightmap), len(heightmap[0])
+    if m < 3 or n < 3:
+        return 0
+
+    import heapq
+
+    heap = []
+    visited = [[False] * n for _ in range(m)]
+
+    for i in range(m):
+        for j in [0, n - 1]:
+            heapq.heappush(heap, (heightmap[i][j], i, j))
+            visited[i][j] = True
+
+    for j in range(n):
+        for i in [0, m - 1]:
+            if not visited[i][j]:
+                heapq.heappush(heap, (heightmap[i][j], i, j))
+                visited[i][j] = True
+
+    water = 0
+
+    while heap:
+        h, i, j = heapq.heappop(heap)
+
+        for di, dj in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+            ni, nj = i + di, j + dj
+
+            if 0 <= ni < m and 0 <= nj < n and not visited[ni][nj]:
+                visited[ni][nj] = True
+                nh = heightmap[ni][nj]
+
+                water += max(0, h - nh)
+                heapq.heappush(heap, (max(h, nh), ni, nj))
+
+    return water
