@@ -968,3 +968,122 @@ def smaller(arr: list[int]) -> list[int]:
         bit.add(r, 1)
 
     return ans
+
+
+29 задача
+from collections import deque
+
+
+def _rot_cw(mask: int, times: int) -> int:
+    m = mask & 0xF
+    for _ in range(times % 4):
+        m = ((m & 0x7) << 1) | ((m & 0x8) >> 3)
+    return m
+
+
+def maze_solver(maze: list[list[int | str]] | tuple[tuple[int | str, ...], ...]) -> list[str] | None:
+    if not maze or not maze[0]:
+        return None
+
+    m = len(maze)
+    n = len(maze[0])
+
+    start: tuple[int, int] | None = None
+    goal: tuple[int, int] | None = None
+
+    for r in range(m):
+        for c in range(n):
+            cell = maze[r][c]
+            if cell == "B":
+                start = (r, c)
+            elif cell == "X":
+                goal = (r, c)
+
+    if start is None or goal is None:
+        return None
+    if start == goal:
+        return []
+
+    # Предвычисляем маски стен для каждой клетки и каждой фазы (0..3)
+    # wall_masks[phase][r][c]
+    wall_masks: list[list[list[int]]] = []
+    for phase in range(4):
+        phase_grid: list[list[int]] = []
+        for r in range(m):
+            row_masks: list[int] = []
+            for c in range(n):
+                cell = maze[r][c]
+                if isinstance(cell, int):
+                    row_masks.append(_rot_cw(cell, phase))
+                else:
+                    # 'B' и 'X' не имеют стенок (эквивалент 0)
+                    row_masks.append(0)
+            phase_grid.append(row_masks)
+        wall_masks.append(phase_grid)
+
+    # (направление, dr, dc, бит стены в текущей клетке, бит стены в соседней клетке)
+    moves = (
+        ("N", -1, 0, 8, 2),
+        ("W", 0, -1, 4, 1),
+        ("S", 1, 0, 2, 8),
+        ("E", 0, 1, 1, 4),
+    )
+
+    def reachable_in_interval(phase: int, sr: int, sc: int) -> dict[tuple[int, int], str]:
+        """Возвращает {конечная_клетка: строка_ходов} за один интервал времени."""
+        masks = wall_masks[phase]
+        best_path: dict[tuple[int, int], str] = {(sr, sc): ""}
+        q: deque[tuple[int, int, str, int]] = deque()
+        start_bit = 1 << (sr * n + sc)
+        q.append((sr, sc, "", start_bit))
+
+        while q:
+            r, c, path, visited_mask = q.popleft()
+            cur_walls = masks[r][c]
+
+            for d_char, dr, dc, out_bit, in_bit in moves:
+                if cur_walls & out_bit:
+                    continue
+                nr, nc = r + dr, c + dc
+                if not (0 <= nr < m and 0 <= nc < n):
+                    continue
+                cell_bit = 1 << (nr * n + nc)
+                if visited_mask & cell_bit:
+                    continue
+                if masks[nr][nc] & in_bit:
+                    continue
+
+                nxt_path = path + d_char
+                # Сохраняем кратчайший путь до клетки (nr, nc) в рамках этого интервала
+                if (nr, nc) not in best_path or len(nxt_path) < len(best_path[(nr, nc)]):
+                    best_path[(nr, nc)] = nxt_path
+                q.append((nr, nc, nxt_path, visited_mask | cell_bit))
+
+        return best_path
+
+    # Внешний BFS по интервалам: состояние (phase, r, c)
+    # visited_states[(phase, r, c)] = список строк траектории до этого состояния
+    start_phase = 0
+    visited_states: dict[tuple[int, int, int], list[str]] = {
+        (start_phase, start[0], start[1]): []
+    }
+    state_queue: deque[tuple[int, int, int]] = deque([(start_phase, start[0], start[1])])
+
+    while state_queue:
+        phase, r, c = state_queue.popleft()
+        cur_history = visited_states[(phase, r, c)]
+
+        reach = reachable_in_interval(phase, r, c)
+        next_phase = (phase + 1) % 4
+
+        for (er, ec), seg_moves in reach.items():
+            new_history = cur_history + [seg_moves]
+            if (er, ec) == goal:
+                return new_history
+
+            nxt_state = (next_phase, er, ec)
+            if nxt_state not in visited_states:
+                visited_states[nxt_state] = new_history
+                state_queue.append(nxt_state)
+
+    return None
