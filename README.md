@@ -926,3 +926,45 @@ class Blobservation:
             [x, y, size]
             for (x, y), size in sorted(self._blobs.items(), key=lambda kv: (kv[0][0], kv[0][1]))
         ]
+
+
+28 задача
+class _FenwickTree:
+    def __init__(self, size: int) -> None:
+        self.n = size
+        self.tree = [0] * (size + 1)
+
+    def add(self, idx: int, delta: int = 1) -> None:
+        n = self.n
+        tree = self.tree
+        while idx <= n:
+            tree[idx] += delta
+            idx += idx & -idx
+
+    def prefix_sum(self, idx: int) -> int:
+        s = 0
+        tree = self.tree
+        while idx > 0:
+            s += tree[idx]
+            idx -= idx & -idx
+        return s
+
+
+def smaller(arr: list[int]) -> list[int]:
+    n = len(arr)
+    if n == 0:
+        return []
+
+    # Coordinate compression: smallest distinct value gets rank 1
+    sorted_unique = sorted(set(arr))
+    rank_of = {val: idx + 1 for idx, val in enumerate(sorted_unique)}
+
+    bit = _FenwickTree(len(sorted_unique))
+    ans = [0] * n
+
+    for i in range(n - 1, -1, -1):
+        r = rank_of[arr[i]]
+        ans[i] = bit.prefix_sum(r - 1)
+        bit.add(r, 1)
+
+    return ans
