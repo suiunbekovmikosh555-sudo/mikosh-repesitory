@@ -802,3 +802,127 @@ def validate_battlefield(field: list[list[int]]) -> bool:
         return False
 
     return backtrack(0)
+
+
+27 задача
+import math
+
+
+class Blobservation:
+    def __init__(self, h: int, w: int | None = None) -> None:
+        if not self._is_valid_int(h) or not (8 <= h <= 50):
+            raise ValueError("h must be an integer between 8 and 50.")
+        if w is None:
+            w = h
+        if not self._is_valid_int(w) or not (8 <= w <= 50):
+            raise ValueError("w must be an integer between 8 and 50.")
+
+        self.h: int = h
+        self.w: int = w
+        # Map (x, y) -> total size
+        self._blobs: dict[tuple[int, int], int] = {}
+
+    @staticmethod
+    def _is_valid_int(value: object) -> bool:
+        return isinstance(value, int) and not isinstance(value, bool)
+
+    def populate(self, blobs: list[dict[str, int]]) -> None:
+        if not isinstance(blobs, list):
+            raise TypeError("blobs must be a list of dictionaries.")
+
+        validated: list[tuple[int, int, int]] = []
+        for item in blobs:
+            if not isinstance(item, dict):
+                raise TypeError("Each blob entry must be a dictionary.")
+            if not {"x", "y", "size"}.issubset(item.keys()):
+                raise ValueError("Each blob dictionary must contain 'x', 'y', and 'size'.")
+
+            x = item["x"]
+            y = item["y"]
+            size = item["size"]
+
+            if not (self._is_valid_int(x) and self._is_valid_int(y) and self._is_valid_int(size)):
+                raise TypeError("'x', 'y', and 'size' must be integers (not booleans).")
+
+            if not (0 <= x < self.h and 0 <= y < self.w):
+                raise ValueError(f"Coordinates ({x}, {y}) are out of bounds for {self.h}x{self.w}.")
+
+            if not (1 <= size <= 20):
+                raise ValueError("Initial blob size must be between 1 and 20.")
+
+            validated.append((x, y, size))
+
+        # Apply all changes only after full validation succeeds
+        for x, y, size in validated:
+            self._blobs[(x, y)] = self._blobs.get((x, y), 0) + size
+
+    @staticmethod
+    def _clockwise_angle(bx: int, by: int, tx: int, ty: int) -> float:
+        # 12 o'clock is dx = -1, dy = 0; x grows downward, y grows rightward
+        dx = tx - bx
+        dy = ty - by
+        return math.atan2(dy, -dx) % (2.0 * math.pi)
+
+    def _step_once(self) -> None:
+        if len(self._blobs) <= 1:
+            return
+
+        sizes = self._blobs.values()
+        min_size = min(sizes)
+        max_size = max(sizes)
+        if min_size == max_size:
+            return
+
+        items = list(self._blobs.items())  # [((x, y), size), ...]
+        next_blobs: dict[tuple[int, int], int] = {}
+
+        for (bx, by), b_size in items:
+            if b_size <= min_size:
+                next_blobs[(bx, by)] = next_blobs.get((bx, by), 0) + b_size
+                continue
+
+            targets = [
+                ((tx, ty), t_size)
+                for (tx, ty), t_size in items
+                if t_size < b_size
+            ]
+
+            if not targets:
+                next_blobs[(bx, by)] = next_blobs.get((bx, by), 0) + b_size
+                continue
+
+            # Best target: shortest distance, then largest size, then clockwise from 12:00
+            (tx, ty), _ = min(
+                targets,
+                key=lambda item: (
+                    max(abs(item[0][0] - bx), abs(item[0][1] - by)),
+                    -item[1],
+                    self._clockwise_angle(bx, by, item[0][0], item[0][1]),
+                ),
+            )
+
+            step_x = 0 if tx == bx else (1 if tx > bx else -1)
+            step_y = 0 if ty == by else (1 if ty > by else -1)
+            nx, ny = bx + step_x, by + step_y
+
+            next_blobs[(nx, ny)] = next_blobs.get((nx, ny), 0) + b_size
+
+        self._blobs = next_blobs
+
+    def move(self, steps: int = 1) -> None:
+        if not self._is_valid_int(steps) or steps < 1:
+            raise ValueError("steps must be a positive integer.")
+
+        for _ in range(steps):
+            if len(self._blobs) <= 1:
+                break
+            sizes = self._blobs.values()
+            if min(sizes) == max(sizes):
+                break
+            self._step_once()
+
+    def print_state(self) -> list[list[int]]:
+        return [
+            [x, y, size]
+            for (x, y), size in sorted(self._blobs.items(), key=lambda kv: (kv[0][0], kv[0][1]))
+        ]
